@@ -35,9 +35,12 @@ Route::group(['prefix' => 'orders' , 'middleware' => 'auth.role' ], function () 
     Route::post('store',[OrderController::class , 'store']) -> name('orders.store');
     Route::get('captain',[OrderController::class , 'captain']) -> name('orders.captain');
   });
-Route::group(['prefix' => 'ordersdepartment' /*, 'middleware' => 'auth.role:chief,admin'*/ ], function () {
-    Route::get('/{title}',[DepartmentController::class , 'department']) -> name('getDepartment');
-    Route::get('/order_details/{id}',[DepartmentController::class , 'order_details']) -> name('getDepartment');
-    Route::post('/order_details/{id}',[DepartmentController::class , 'order_details_update']) -> name('put.order.Department');
+Route::group(['prefix' => 'department' /*, 'middleware' => 'auth.role:chief,admin'*/ ], function () {
+    Route::get('/{id}',[DepartmentController::class , 'department']) -> name('getDepartment');
+    Route::get('/order/{id}',[DepartmentController::class , 'order_details']) -> name('getDepartment');
+    Route::post('/updateStatus/{id}',[DepartmentController::class , 'order_details_update']) -> name('put.order.Department');
 });
+
+
+
 

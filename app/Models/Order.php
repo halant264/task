@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Order_details;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Order_details;
 
 
 class Order extends Model
@@ -71,5 +71,9 @@ class Order extends Model
     {
         $this->attributes['total_after_taxes'] = $this->total_price + $this->taxes;
     }
-    
+
+    public function order_detailss(){
+        return $this->hasMany(Order_details::class , 'order_id' , 'id' );
+    }
+
 }

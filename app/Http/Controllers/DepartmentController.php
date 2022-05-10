@@ -13,7 +13,7 @@ use DB;
 
 class DepartmentController extends Controller
 {
-    public function department($id){  
+    public function department($id){
 
             $dw = Department::with('categories' )->whereHas('categories' ,  function($ss){
                  $ss->with('items')->whereHas('items' ,  function($s1){
@@ -23,8 +23,6 @@ class DepartmentController extends Controller
                  });
             })->where('id' , 1)->get();
 
-
-               
             $order_department = DB::table('order_details')
             ->leftJoin('itemsr', 'itemsr.id' , 'item_id')
             ->leftJoin('categories', 'categories.id' , 'category_id')
@@ -32,65 +30,81 @@ class DepartmentController extends Controller
             ->select('order_details.*' , 'itemsr.title')
             ->get();
 
-            $grouped = $order_department->groupBy('order_id'); 
+            $grouped = $order_department->groupBy('order_id');
 
-            
-        return    response()->json([       
-            "data" => $order_department,
-            "grouped" => $grouped,
 
+        return    response()->json([
+            "order_for_department" => $grouped,
         ]);;
-    } 
+    }
 
     public function order_details($id){
 
-        $order_details = Order_details::find($id);
+        $order = Order::with('order_detailss')->where("id" ,$id )->get();
 
-        return   response()->json([       
-            "data" => $order_details
+        if (!$order->isEmpty()){
+            return   response()->json([
+                "data" => $order
+            ]);
+        }
+
+        return   response()->json([
+            "data" => 'No Order Found'
         ]);
     }
 
     public function order_details_update(Request $request , $id){
 
-    // dd($request->all());
 
-        $order_details = Order_details::where( "id" ,$id)->updateOrCreate(['status'=> $request->status]);
+        $order_details = Order_details::find( $id);
+        $order_details->status =  $request->status;
+        $order_details->save();
 
-        $order = Order::find( $order_details->order_id);
 
 
-        // if order_details item one is preparing order status will set preparing 
-        if($order->status == 'pending'){
-            Order::where( "id" ,  $order_details->order_id )->update(['status'=>'preparing']);
-            $table = Table::where( "id" , $order->table_id)->update(['status'=>'reversed']);
-        }
+        $this->orderStatus($order_details->order_id);
 
-        // check all order_detils is done order status will set done 
-        $order_details1 = Order_details::where( "order_id" ,$order->id)->get();
-        $a =array('done' , 'canceled') ;
-        $check = 0 ;
-        // dd($order_details1[1]->status);
-        for($i=0 ; $i < $order_details1->count() ; $i++){
-            if($order_details1[$i]->status == 'done'){
-                // dd('s');
-                array_push( $a  , $check++);
-                // $check++ ;
+        return   response()->json([
+            "data" => 'Order Details Update'
+        ]);
+    }
+    public function orderStatus( $id)
+    {
+        $order_de = Order_details::where("order_id", $id)
+            ->groupBy('status')
+            ->select(DB::raw('status , COUNT(*) as status_count'))
+            ->get();
+        $order_count = Order_details::where("order_id", $id)->count();
+        $i1 = 10 ;
+        $ii = 10 ;
+
+        foreach ($order_de as $order_de1) {
+            if ($order_de1->status== 'preparing') {
+                $order_details = Order::where("id", $id)->update(['status' => 'preparing']);
+                break;
+            }else if ($order_de1->status == 'done') {
+                $ii = 11 ;
             }
-            else{
-                array_push( $a , $check++);
-                // $check--;
+            elseif ($order_de1->status == 'pending') {
+                $i1 = 11 ;
+                }
+            else {
+                if ($order_de1->status_count  == $order_count) {
+                    $order_details = Order::where("id", $id)->update(['status' => 'canceled']);
+                }
             }
-
         }
 
-        
-        if( $check == $order_details1->count()){
-            Order::where( "id" ,  $order_details->order_id )->updateOrCreate(['status'=>'done']);
-
+        if ($i1 >=11  &  $ii>=11) {
+            $order_detail = Order::where("id", $id)->update(['status' => 'preparing']);
         }
-        dd($check );
+        elseif ($i1 <= 10  & $ii>=11){
+           $order_detail =  Order::where("id", $id)->update(['status' => 'done']);
+        }
 
-        return $order_details ; 
+        $order_des = Order::where( "id" , $id)->get();
+
+
+        return $order_des ;
     }
 }

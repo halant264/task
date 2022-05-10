@@ -29,4 +29,7 @@ class Order_details extends Model
     public function items(){
         return $this->belongsTo(Itemsr::class , 'item_id' , 'id' );
     }
+    public function orders(){
+        return $this->belongsTo(Order::class , 'item_id' , 'id' );
+    }
 }
