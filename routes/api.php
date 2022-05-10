@@ -23,21 +23,24 @@ use App\Http\Controllers\DepartmentController;
 //     return $request->user();
 // });
 
+// 2- 	A secure login to application using API login 
 Route::post('login', [AuthController ::class, 'login'])->name('login');
 Route::post('logout', [AuthController ::class, 'logout'])->name('logout');
 
-Route::get('products', function(){
-    return 'rr';
-})->middleware(['auth.role:user,admin' ]);
+// 3-	A route with secure login based on secure login 
+Route::group(['prefix' => 'orders'  , 'middleware' => 'auth.role'], function () {
 
-Route::group(['prefix' => 'orders' , 'middleware' => 'auth.role' ], function () {
-    Route::get('/',[OrderController::class , 'index']) -> name('orders');
+    // a- A route with secure login based on secure login you choose to implement:
     Route::post('store',[OrderController::class , 'store']) -> name('orders.store');
-    Route::get('captain',[OrderController::class , 'captain']) -> name('orders.captain');
+
+    // c- API for captain to show order and order detail including calculated fields.
+    Route::get('/{id}',[OrderController::class , 'order_details']) -> name('orders.captain');
   });
-Route::group(['prefix' => 'department' /*, 'middleware' => 'auth.role:chief,admin'*/ ], function () {
+
+//   b- API based on role for each chief (admin has power) for:
+    // Each department will get his own items to prepar    // 
+Route::group(['prefix' => 'department' , 'middleware' => 'auth.role:chief,admin' ], function () {
     Route::get('/{id}',[DepartmentController::class , 'department']) -> name('getDepartment');
-    Route::get('/order/{id}',[DepartmentController::class , 'order_details']) -> name('getDepartment');
     Route::post('/updateStatus/{id}',[DepartmentController::class , 'order_details_update']) -> name('put.order.Department');
 });
 

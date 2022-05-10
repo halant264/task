@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use DB;
 
 
-use App\Models\Itemsr;
+use App\Models\Item;
 use App\Models\Category;
 use App\Models\Table;
 use App\Models\Order_details;
@@ -26,6 +26,8 @@ class OrderController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+     //// store Order  Q: 3-a
     public function store( OrderRequest $request)
     {
 
@@ -63,13 +65,19 @@ class OrderController extends Controller
 
 
                 foreach ($request->item as $items) {
-                    $item = Itemsr::find($items['id']);
 
+
+                    $item = Item::find($items['id']);
                     $orderDetails2 = new Order_details();
+
                     $orderDetails2->order_id = $newOrder->id;
                     $orderDetails2->item_id = $items['id'];
+                    
                     $orderDetails2->total_price = ($item->sell_price) * $items['count'];
                     $orderDetails2->count = $items['count'];
+                    if (isset($items['notes'])) {
+                        $orderDetails2->notes = $items['notes'];
+                    }
 
                     $orderDetails2->save();
                 }
@@ -97,11 +105,30 @@ class OrderController extends Controller
             }
         }catch (\Exception $ex) {
             DB::rollback();
-            return redirect()->route('admin.maincategories')->with(['error' => 'حدث خطا ما برجاء المحاوله لاحقا']);
+            return response()->json([
+                "message" => "Error"
+            ]);
         }
 
 
 
     }
 
+
+    //// get Order Details Q: 3-c 
+
+    public function order_details($id){
+
+        $order = Order::with('order_detailss')->where("id" ,$id )->get();
+
+        if (!$order->isEmpty()){
+            return   response()->json([
+                "data" => $order
+            ]);
+        }
+
+        return   response()->json([
+            "data" => 'No Order Found'
+        ]);
+    }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Department;
-use App\Models\Itemsr;
+use App\Models\Item;
 use App\Models\Order_details;
 use App\Models\Order;
 use App\Models\Category;
@@ -13,6 +13,9 @@ use DB;
 
 class DepartmentController extends Controller
 {
+
+
+    /// get foreach department own items 
     public function department($id){
 
             $dw = Department::with('categories' )->whereHas('categories' ,  function($ss){
@@ -24,35 +27,30 @@ class DepartmentController extends Controller
             })->where('id' , 1)->get();
 
             $order_department = DB::table('order_details')
-            ->leftJoin('itemsr', 'itemsr.id' , 'item_id')
+            ->leftJoin('Items', 'Items.id' , 'item_id')
             ->leftJoin('categories', 'categories.id' , 'category_id')
             ->where('department_id' , $id )
-            ->select('order_details.*' , 'itemsr.title')
+            ->select('order_details.*' , 'Items.title')
             ->get();
-
             $grouped = $order_department->groupBy('order_id');
 
-
-        return    response()->json([
-            "order_for_department" => $grouped,
-        ]);;
+            if(!$order_department->isEmpty()){
+                return    response()->json([
+                    "order_for_department" => $grouped,
+                ]);;
+            }
+            else{
+                return    response()->json([
+                    "No order founded",
+                ]);;
+            }
+       
     }
 
-    public function order_details($id){
+    
 
-        $order = Order::with('order_detailss')->where("id" ,$id )->get();
 
-        if (!$order->isEmpty()){
-            return   response()->json([
-                "data" => $order
-            ]);
-        }
-
-        return   response()->json([
-            "data" => 'No Order Found'
-        ]);
-    }
-
+    ///// update order details status from department 
     public function order_details_update(Request $request , $id){
 
 
@@ -68,6 +66,7 @@ class DepartmentController extends Controller
             "data" => 'Order Details Update'
         ]);
     }
+
     public function orderStatus( $id)
     {
         $order_de = Order_details::where("order_id", $id)

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Itemsr;
+use App\Models\Item;
 use App\Models\Department;
 
 class Category extends Model
@@ -15,19 +15,10 @@ class Category extends Model
 
     protected $fillable = [
         'department_id',
-        // 'item_id ',
-        // 'total_price',
-        // 'count',
-        // 'is_fired',
-        // 'status',
-        // 'notes',
-        // 'note_price',
-        // 'delay',
-        // 'cost',
     ];
 
     public function items(){
-        return $this->hasMany(Itemsr::class , 'category_id' , 'id');
+        return $this->hasMany(Item::class , 'category_id' , 'id');
     }
 
     public function departments(){

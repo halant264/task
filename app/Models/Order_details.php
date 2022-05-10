@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Itemsr;
+use App\Models\Item;
 
 class Order_details extends Model
 {
@@ -27,7 +27,7 @@ class Order_details extends Model
     ];
 
     public function items(){
-        return $this->belongsTo(Itemsr::class , 'item_id' , 'id' );
+        return $this->belongsTo(Item::class , 'item_id' , 'id' );
     }
     public function orders(){
         return $this->belongsTo(Order::class , 'item_id' , 'id' );
